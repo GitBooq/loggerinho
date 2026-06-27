@@ -9,7 +9,7 @@
  *        If list is empty passes all records.
  *
  */
-class NameFilter : public IFilter {
+class NameFilter final : public IFilter {
 public:
   NameFilter() = default;
   // one extra move but who cares

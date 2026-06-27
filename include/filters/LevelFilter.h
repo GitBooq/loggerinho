@@ -6,7 +6,7 @@
  * @brief Passes only logs with level >= minLevel_
  *
  */
-class LevelFilter : public IFilter {
+class LevelFilter final : public IFilter {
 public:
   explicit LevelFilter(LogLevel minLevel) : minLevel_(minLevel) {};
 
