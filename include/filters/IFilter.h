@@ -2,6 +2,9 @@
 #include "core/log_record.h"
 
 class IFilter {
+public:
+  virtual ~IFilter() = default;
+
   /**
    * @brief Determines whether a log record should be processed further
    *

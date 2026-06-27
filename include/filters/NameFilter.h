@@ -11,6 +11,7 @@
  */
 class NameFilter : public IFilter {
 public:
+  NameFilter() = default;
   // one extra move but who cares
   explicit NameFilter(std::set<std::string> allowed)
       : allowed_(std::move(allowed)) {}
