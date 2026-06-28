@@ -36,6 +36,6 @@ TEST_P(LevelFilterTest, FiltersCorrectly) {
   EXPECT_EQ(filter(record), record_level >= filter_level);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllCombinations, LevelFilterTest,
+INSTANTIATE_TEST_SUITE_P(AllLevelCombinations, LevelFilterTest,
                          ::testing::Combine(::testing::ValuesIn(kLogLevels),
                                             ::testing::ValuesIn(kLogLevels)));

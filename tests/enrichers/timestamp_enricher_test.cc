@@ -3,15 +3,7 @@
 
 #include "enrichers/base_enricher.h"
 #include "enrichers/timestamp_enricher.h"
-
-using ::testing::_;
-using ::testing::NiceMock;
-using ::testing::Return;
-
-class MockTimeProvider : public ITimeProvider {
-public:
-  MOCK_METHOD(TimePoint, getCurrentTimepoint, (), (const, override));
-};
+#include "mocks/mock_time_provider.h"
 
 class TimestampEnricherTest : public ::testing::Test {
 protected:
