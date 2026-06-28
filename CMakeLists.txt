@@ -29,11 +29,22 @@ if (ENABLE_SANITIZERS)
     add_link_options(-fsanitize=address,undefined)
 endif()
 
+# json library
+FetchContent_Declare(json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.12.0
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(json)
+
 add_library(logger 
     #src/core/logger.cpp
     #src/filters/LevelFilter.cpp
     src/stub.cc
 )
+
+target_link_libraries(logger PUBLIC nlohmann_json::nlohmann_json)
 
 target_include_directories(logger PUBLIC ${CMAKE_SOURCE_DIR}/include)
 

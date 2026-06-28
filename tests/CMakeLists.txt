@@ -17,6 +17,8 @@ add_executable(tests_all
     filters/name_filter_test.cc
     enrichers/timestamp_enricher_test.cc
     enrichers/enricher_factory_test.cc
+    formatters/plain_text_formatter_test.cc
+    formatters/json_formatter_test.cc
 )
 
 target_link_libraries(tests_all
