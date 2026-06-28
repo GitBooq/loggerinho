@@ -19,6 +19,8 @@ add_executable(tests_all
     enrichers/enricher_factory_test.cc
     formatters/plain_text_formatter_test.cc
     formatters/json_formatter_test.cc
+    sinks/console_sink_test.cc
+    sinks/file_sink_test.cc
 )
 
 target_link_libraries(tests_all
@@ -26,6 +28,8 @@ target_link_libraries(tests_all
     GTest::gtest_main
     GTest::gmock_main
 )
+
+target_include_directories(tests_all PRIVATE ${CMAKE_SOURCE_DIR}/tests)
 
 target_compile_options(tests_all PRIVATE
     -O0

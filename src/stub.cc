@@ -9,3 +9,6 @@
 #include "formatters/IFormatter.h"
 #include "formatters/plain_text_formatter.h"
 #include "formatters/json_formatter.h"
+
+#include "sinks/ILog_sink.h"
+#include "sinks/console_sink.h"
