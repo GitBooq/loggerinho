@@ -8,7 +8,7 @@ namespace formatter {
 class IFormatter {
 public:
   virtual ~IFormatter() = default;
-  virtual std::string operator()(const LogRecord &record) = 0;
+  virtual std::string operator()(const LogRecord &record) const = 0;
 };
 
 inline std::string logLevelToString(LogLevel level) {

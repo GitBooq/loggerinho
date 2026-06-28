@@ -6,7 +6,7 @@
 namespace formatter {
 class JsonFormatter : public IFormatter {
 public:
-  std::string operator()(const LogRecord &record) override {
+  std::string operator()(const LogRecord &record) const override {
     using json = nlohmann::json;
 
     json jSon;

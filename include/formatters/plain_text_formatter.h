@@ -8,7 +8,7 @@ namespace formatter {
 class PlainTextFormatter final : public IFormatter {
 
 public:
-  std::string operator()(const LogRecord &record) override {
+  std::string operator()(const LogRecord &record) const override {
     // the level takes exactly 5 characters (space aligned to the right)
     std::string record_str =
         std::format("[{}] [{:5}] [{}] {}{}", formatTimestamp(record.timestamp),
