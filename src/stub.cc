@@ -1,0 +1,6 @@
+#include "core/enricher_factory.h"
+#include "core/log_record.h"
+#include "enrichers/IEnricher.h"
+#include "enrichers/base_enricher.h"
+#include "enrichers/enricher_flags.h"
+#include "enrichers/timestamp_enricher.h"

@@ -1,10 +1,11 @@
 #pragma once
 #include <chrono>
+#include <cstdint>
 #include <map>
 #include <string>
 
 // Order defines priority!
-enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
+enum class LogLevel : std::uint8_t { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
 
 struct LogRecord {
   LogLevel level;

@@ -15,11 +15,14 @@ enable_testing()
 add_executable(tests_all
     filters/level_filter_test.cc
     filters/name_filter_test.cc
+    enrichers/timestamp_enricher_test.cc
+    enrichers/enricher_factory_test.cc
 )
 
 target_link_libraries(tests_all
     logger
     GTest::gtest_main
+    GTest::gmock_main
 )
 
 target_compile_options(tests_all PRIVATE

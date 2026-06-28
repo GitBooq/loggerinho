@@ -32,10 +32,12 @@ endif()
 add_library(logger 
     #src/core/logger.cpp
     #src/filters/LevelFilter.cpp
-    src/filters/stub.cc
+    src/stub.cc
 )
 
 target_include_directories(logger PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+target_compile_features(logger PUBLIC cxx_std_20)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
