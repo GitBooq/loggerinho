@@ -26,7 +26,7 @@ inline std::string logLevelToString(LogLevel level) {
   case LogLevel::FATAL:
     return "FATAL";
   default:
-    return "UNKN";
+    return "UNKNW";
   }
 }
 

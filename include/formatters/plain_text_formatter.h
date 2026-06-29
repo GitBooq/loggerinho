@@ -3,7 +3,6 @@
 #include "IFormatter.h"
 #include <format>
 
-
 namespace formatter {
 class PlainTextFormatter final : public IFormatter {
 
@@ -19,8 +18,6 @@ public:
   }
 
 private:
-  
-
   static std::string
   recordFieldsToString(const std::map<std::string, std::string> &fields) {
     std::string result;

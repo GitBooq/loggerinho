@@ -39,17 +39,22 @@ FetchContent_Declare(json
 FetchContent_MakeAvailable(json)
 
 add_library(logger 
-    #src/core/logger.cpp
-    #src/filters/LevelFilter.cpp
-    src/stub.cc
+    src/sinks/file_sink.cc
+    src/sinks/buffered_sink.cc
+    src/sinks/console_sink.cc
 )
 
-target_link_libraries(logger PUBLIC nlohmann_json::nlohmann_json)
-
-target_include_directories(logger PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(logger 
+    PUBLIC 
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/core)
 
 target_compile_features(logger PUBLIC cxx_std_20)
+
+target_link_libraries(logger PUBLIC nlohmann_json::nlohmann_json)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
+
+add_subdirectory(example)

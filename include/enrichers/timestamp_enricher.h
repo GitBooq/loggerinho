@@ -3,6 +3,7 @@
 #include "IEnricher.h"
 #include "core/ITime_provider.h"
 #include "core/system_time_provider.h"
+
 #include <chrono>
 #include <memory>
 #include <utility>

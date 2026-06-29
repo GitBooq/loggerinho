@@ -1,14 +1,20 @@
 #pragma once
 
-#include "enrichers/IEnricher.h"
+#include "enricher_factory.h"
 #include "filters/IFilter.h"
+#include "filters/LevelFilter.h"
+#include "filters/NameFilter.h"
+#include "formatters/json_formatter.h"
 #include "logger.h"
 #include "sinks/ILog_sink.h"
+#include "sinks/buffered_sink.h"
+#include "sinks/file_sink.h"
 
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -97,6 +103,100 @@ public:
       logger->flush();
     }
   }
+
+  class Builder {
+  public:
+    Builder() = default;
+
+    Builder &named(const std::string &name) {
+      name_ = name;
+      return *this;
+    }
+
+    Builder &
+    withConsoleSink(const std::shared_ptr<formatter::IFormatter> &formatter =
+                        std::make_shared<formatter::PlainTextFormatter>()) {
+      sinks_.push_back(std::make_shared<ConsoleSink>(formatter));
+      return *this;
+    }
+
+    Builder &
+    withFileSink(const std::string &path,
+                 const std::shared_ptr<formatter::IFormatter> &formatter =
+                     std::make_shared<formatter::PlainTextFormatter>(),
+                 std::size_t maxSize = 1024 * 1024) {
+      sinks_.push_back(std::make_shared<FileSink>(formatter, path, maxSize));
+      return *this;
+    }
+
+    Builder &withBufferedSink(const std::shared_ptr<ILogSink> &downstream,
+                              std::size_t batchSize = 100) {
+      sinks_.push_back(std::make_shared<BufferedSink>(
+          std::make_shared<formatter::PlainTextFormatter>(),
+          std::unique_ptr<ILogSink>(downstream.get()), batchSize));
+      return *this;
+    }
+
+    Builder &withTimestamp() {
+      enricher_ = EnricherFactory::create(enricher::EnricherFlag::TIMESTAMP);
+      return *this;
+    }
+
+    Builder &withLevelFilter(LogLevel minLevel) {
+      filters_.push_back(std::make_shared<LevelFilter>(minLevel));
+      return *this;
+    }
+
+    Builder &withNameFilter(const std::set<std::string> &allowed) {
+      filters_.push_back(std::make_shared<NameFilter>(allowed));
+      return *this;
+    }
+
+    Builder &withJsonFormatter() {
+      formatter_ = std::make_shared<formatter::JsonFormatter>();
+      return *this;
+    }
+
+    Builder &withPlainTextFormatter() {
+      formatter_ = std::make_shared<formatter::PlainTextFormatter>();
+      return *this;
+    }
+
+    /**
+     * @brief Build logger using defaults(if not specified) as
+     * PlainTextFormatter, ConsoleSink, TIMESTAMP Enricher
+     *
+     */
+    std::shared_ptr<Logger> build() {
+      if (!formatter_) {
+        formatter_ = std::make_shared<formatter::PlainTextFormatter>();
+      }
+
+      if (sinks_.empty()) {
+        sinks_.push_back(std::make_shared<ConsoleSink>(formatter_));
+      }
+
+      if (!enricher_) {
+        enricher_ = EnricherFactory::create(enricher::EnricherFlag::TIMESTAMP);
+      }
+
+      auto logger =
+          std::make_shared<Logger>(name_, filters_, enricher_, sinks_);
+
+      LogManager::instance().loggers_[name_] = logger;
+
+      return logger;
+    }
+
+  private:
+    std::string name_ = "logger";
+    std::vector<std::shared_ptr<ILogSink>> sinks_;
+    std::shared_ptr<IEnricher> enricher_;
+    std::vector<std::shared_ptr<IFilter>> filters_;
+    std::shared_ptr<IFormatter> formatter_;
+  };
+
+  static Builder builder() { return {}; }
 
 private:
   LogManager() = default;
