@@ -14,3 +14,6 @@
 #include "sinks/buffered_sink.h"
 #include "sinks/console_sink.h"
 #include "sinks/file_sink.h"
+
+#include "core/logger.h"
+#include "core/log_manager.h"
