@@ -22,11 +22,10 @@ public:
   bool open() const override { return file_.is_open(); }
 
   void write(const LogRecord &record) override {
-
     if (!file_.is_open()) {
       file_.open(filePath_, std::ios::app);
       if (!file_.is_open()) {
-        onError(record);
+        onError("Cannot open file.");
         return;
       }
       writtenBytes_ = std::filesystem::file_size(filePath_);
@@ -45,11 +44,30 @@ public:
     writtenBytes_ += messageSize;
   }
 
-  void flush() override { file_.flush(); }
+  void write(const std::string &message) override {
+    if (!file_.is_open()) {
+      file_.open(filePath_, std::ios::app);
+      if (!file_.is_open()) {
+        onError("Cannot open file.");
+        return;
+      }
+      writtenBytes_ = std::filesystem::file_size(filePath_);
+    }
 
-  void onError(const LogRecord &record) override {
-    std::cerr << (*formatter_)(record) << "\n";
+    if (writtenBytes_ >= maxFileSize_) {
+      rotate();
+    }
+
+    std::stringstream buffer;
+    buffer << message << '\n';
+
+    std::size_t messageSize = getBufferSize(buffer);
+
+    file_ << buffer.rdbuf();
+    writtenBytes_ += messageSize;
   }
+
+  void flush() override { file_.flush(); }
 
 private:
   void rotate() {
