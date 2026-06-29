@@ -11,8 +11,8 @@ using ::testing::Return;
 
 class MockLogSink : public ILogSink {
 public:
-  MOCK_METHOD(bool, open, (), (const, override, noexcept));
-  MOCK_METHOD(void, write, (const LogRecord &record), (override, noexcept));
-  MOCK_METHOD(void, write, (const std::string &message), (override, noexcept));
-  MOCK_METHOD(void, flush, (), (override, noexcept));
+  MOCK_METHOD(bool, open, (), (const, noexcept, override));
+  MOCK_METHOD(void, write, (const LogRecord &record), (noexcept, override));
+  MOCK_METHOD(void, write, (const std::string &message), (noexcept, override));
+  MOCK_METHOD(void, flush, (), (noexcept, override));
 };
