@@ -23,9 +23,11 @@ public:
   BufferedSink &operator=(const BufferedSink &) = delete;
   BufferedSink &operator=(BufferedSink &&) noexcept = default;
 
-  [[nodiscard]] bool open() const override { return downstream_->open(); }
+  [[nodiscard]] bool open() const noexcept override {
+    return downstream_->open();
+  }
 
-  void write(const LogRecord &record) override {
+  void write(const LogRecord &record) noexcept override {
     std::string formatted = (*formatter_)(record);
     formattedMessages_.push_back(formatted);
 
@@ -34,7 +36,7 @@ public:
     }
   }
 
-  void write(const std::string &message) override {
+  void write(const std::string &message) noexcept override {
     formattedMessages_.push_back(message);
 
     if (formattedMessages_.size() >= batchSize_) {
@@ -42,7 +44,7 @@ public:
     }
   }
 
-  void flush() override {
+  void flush() noexcept override {
     if (!formattedMessages_.empty()) {
       for (const auto &msg : formattedMessages_) {
         downstream_->write(msg);

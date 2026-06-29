@@ -17,57 +17,111 @@ public:
       : formatter_(std::move(formatter)), filePath_(std::move(filePath)),
         maxFileSize_(maxFileSize) {}
 
-  ~FileSink() noexcept override { file_.close(); }
-
-  bool open() const override { return file_.is_open(); }
-
-  void write(const LogRecord &record) override {
-    if (!file_.is_open()) {
-      file_.open(filePath_, std::ios::app);
-      if (!file_.is_open()) {
-        onError("Cannot open file.");
-        return;
+  ~FileSink() noexcept override {
+    try {
+      if (file_.is_open()) {
+        file_.close();
       }
-      writtenBytes_ = std::filesystem::file_size(filePath_);
+    } catch (...) {
     }
-
-    if (writtenBytes_ >= maxFileSize_) {
-      rotate();
-    }
-
-    std::stringstream buffer;
-    buffer << (*formatter_)(record) << '\n';
-
-    std::size_t messageSize = getBufferSize(buffer);
-
-    file_ << buffer.rdbuf();
-    writtenBytes_ += messageSize;
   }
 
-  void write(const std::string &message) override {
-    if (!file_.is_open()) {
-      file_.open(filePath_, std::ios::app);
+  bool open() const noexcept override { return file_.is_open(); }
+
+  void write(const LogRecord &record) noexcept override {
+    try {
       if (!file_.is_open()) {
-        onError("Cannot open file.");
+        file_.open(filePath_, std::ios::app);
+        if (!file_.is_open()) {
+          onError("Cannot open file: " + filePath_.generic_string());
+          return;
+        }
+        writtenBytes_ = std::filesystem::file_size(filePath_);
+      }
+
+      if (writtenBytes_ >= maxFileSize_) {
+        try {
+          rotate();
+        } catch (const std::exception &e) {
+          onError("Rotation failed: " + std::string(e.what()));
+          return;
+        }
+      }
+
+      std::stringstream buffer;
+      try {
+        buffer << (*formatter_)(record) << '\n';
+      } catch (const std::exception &e) {
+        onError("Formatting failed: " + std::string(e.what()));
         return;
       }
-      writtenBytes_ = std::filesystem::file_size(filePath_);
+
+      std::size_t messageSize = getBufferSize(buffer);
+
+      try {
+        file_ << buffer.rdbuf();
+        writtenBytes_ += messageSize;
+      } catch (const std::exception &e) {
+        onError("Write failed: " + std::string(e.what()));
+        file_.close();
+      }
+    } catch (const std::exception &e) {
+      onError("Unexpected error in write: " + std::string(e.what()));
+    } catch (...) {
+      onError("Unknown error in write");
     }
-
-    if (writtenBytes_ >= maxFileSize_) {
-      rotate();
-    }
-
-    std::stringstream buffer;
-    buffer << message << '\n';
-
-    std::size_t messageSize = getBufferSize(buffer);
-
-    file_ << buffer.rdbuf();
-    writtenBytes_ += messageSize;
   }
 
-  void flush() override { file_.flush(); }
+  void write(const std::string &message) noexcept override {
+    try {
+      if (!file_.is_open()) {
+        file_.open(filePath_, std::ios::app);
+        if (!file_.is_open()) {
+          onError("Cannot open file.");
+          return;
+        }
+        writtenBytes_ = std::filesystem::file_size(filePath_);
+      }
+
+      if (writtenBytes_ >= maxFileSize_) {
+        try {
+          rotate();
+        } catch (const std::exception &e) {
+          onError("Rotation failed: " + std::string(e.what()));
+          return;
+        }
+      }
+
+      std::stringstream buffer;
+      buffer << message << '\n';
+
+      std::size_t messageSize = getBufferSize(buffer);
+      try {
+        file_ << buffer.rdbuf();
+        writtenBytes_ += messageSize;
+      } catch (const std::exception &e) {
+        onError("Write failed: " + std::string(e.what()));
+        file_.close();
+      }
+
+    } catch (const std::exception &e) {
+      onError("Unexpected error in write: " + std::string(e.what()));
+    } catch (...) {
+      onError("Unknown error in write");
+    }
+  }
+
+  void flush() noexcept override {
+    try {
+      if (file_.is_open()) {
+        file_.flush();
+      }
+    } catch (const std::exception &e) {
+      onError("Flush failed: " + std::string(e.what()));
+    } catch (...) {
+      onError("Unknown error during flush");
+    }
+  }
 
 private:
   void rotate() {
