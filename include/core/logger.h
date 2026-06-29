@@ -6,6 +6,7 @@
 
 #include "enrichers/IEnricher.h"
 #include "enrichers/base_enricher.h"
+#include "formatters/plain_text_formatter.h"
 #include "filters/IFilter.h"
 #include "sinks/ILog_sink.h"
 #include "sinks/console_sink.h"
@@ -14,12 +15,12 @@ class Logger {
 public:
   explicit Logger(std::string name)
       : name_(std::move(name)), enricher_(std::make_shared<BaseEnricher>()) {
-    sinks_.push_back(std::make_shared<ConsoleSink>());
+    sinks_.push_back(std::make_shared<ConsoleSink>(std::make_shared<formatter::PlainTextFormatter>()));
   }
 
   Logger(std::string name, std::vector<std::shared_ptr<IFilter>> filters,
-         std::shared_ptr<IEnricher> enricher,
-         std::vector<std::shared_ptr<ILogSink>> sinks)
+         std::shared_ptr<IEnricher> enricher = std::make_shared<BaseEnricher>(),
+         std::vector<std::shared_ptr<ILogSink>> sinks = {})
       : name_(std::move(name)), filters_(std::move(filters)),
         enricher_(std::move(enricher)), sinks_(std::move(sinks)) {}
 

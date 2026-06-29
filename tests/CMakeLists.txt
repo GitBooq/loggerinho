@@ -22,6 +22,8 @@ add_executable(tests_all
     sinks/console_sink_test.cc
     sinks/file_sink_test.cc
     sinks/buffered_sink_test.cc
+    core/logger_test.cc
+    core/log_manager_test.cc
 )
 
 target_link_libraries(tests_all
