@@ -21,6 +21,7 @@ add_executable(tests_all
     formatters/json_formatter_test.cc
     sinks/console_sink_test.cc
     sinks/file_sink_test.cc
+    sinks/buffered_sink_test.cc
 )
 
 target_link_libraries(tests_all
