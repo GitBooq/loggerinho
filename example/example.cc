@@ -1,4 +1,4 @@
-#include "log_manager.h"
+#include "core/log_manager.h"
 
 int main() {
   std::string seviceName = "ipv4filter";
