@@ -1,0 +1,4 @@
+build/
+.docs/
+.clangd
+Testing/
