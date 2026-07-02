@@ -11,7 +11,7 @@ public:
   BufferedSink(std::shared_ptr<formatter::IFormatter> formatter,
                std::unique_ptr<ILogSink> downstream, std::size_t batchSize);
 
-  ~BufferedSink() noexcept override = default;
+  ~BufferedSink() noexcept override;
   // disallow copy but move
   BufferedSink(const BufferedSink &) = delete;
   BufferedSink(BufferedSink &&) noexcept = default;

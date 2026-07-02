@@ -13,7 +13,7 @@ using ::testing::InSequence;
 using ::testing::Return;
 
 class BufferedSinkTest : public ::testing::Test {
-protected:
+ protected:
   void SetUp() override {
     mockDownstream_ = std::make_unique<MockLogSink>();
     mockFormatter_ = std::make_shared<MockFormatter>();
@@ -23,27 +23,35 @@ protected:
   std::shared_ptr<MockFormatter> mockFormatter_;
 };
 
-TEST_F(BufferedSinkTest, WriteFormatsAndBuffers) {
+TEST_F(BufferedSinkTest, WriteAndFlushOnlyOnDestruction) {
   EXPECT_CALL(*mockFormatter_, ParanthesisOp(_))
       .Times(Exactly(2))
       .WillRepeatedly(Return("Formatted message"));
 
   // LogRecord doesn't have operator== which required by EXPECT_CALL
   // -> using ::testing::An<const LogRecord&>() matcher
-  EXPECT_CALL(*mockDownstream_, write(An<const LogRecord &>())).Times(0);
+  EXPECT_CALL(*mockDownstream_, write(An<const LogRecord&>())).Times(0);
+  EXPECT_CALL(*mockDownstream_, write(An<const std::string&>())).Times(0);
   EXPECT_CALL(*mockDownstream_, flush()).Times(0);
 
   constexpr std::size_t kBatchSize = 3;
+  auto rawDownstreamPtr = mockDownstream_.get();
   BufferedSink sink(mockFormatter_, std::move(mockDownstream_), kBatchSize);
 
   LogRecord record;
 
-  sink.write(record); // to sink buff
-  sink.write(record); // same
+  sink.write(record);  // to sink buff
+  sink.write(record);  // same
+
+  testing::Mock::VerifyAndClearExpectations(rawDownstreamPtr);
+
+  EXPECT_CALL(*rawDownstreamPtr, write(An<const std::string&>()))
+      .Times(Exactly(2))
+      .WillRepeatedly(Return());
+  EXPECT_CALL(*rawDownstreamPtr, flush()).Times(AtLeast(1));
 }
 
 TEST_F(BufferedSinkTest, ReachingBatchSizeTriggersFlush) {
-
   EXPECT_CALL(*mockFormatter_, ParanthesisOp(_))
       .Times(Exactly(3))
       .WillRepeatedly(Return("Message"));
@@ -56,9 +64,9 @@ TEST_F(BufferedSinkTest, ReachingBatchSizeTriggersFlush) {
 
   LogRecord record;
 
-  sink.write(record); // to sink buff
-  sink.write(record); // same
-  sink.write(record); // buff is full -> flush
+  sink.write(record);  // to sink buff
+  sink.write(record);  // same
+  sink.write(record);  // buff is full -> flush
 }
 
 TEST_F(BufferedSinkTest, WriteStringOverload) {
@@ -71,8 +79,8 @@ TEST_F(BufferedSinkTest, WriteStringOverload) {
   constexpr std::size_t kBatchSize = 2;
   BufferedSink sink(mockFormatter_, std::move(mockDownstream_), kBatchSize);
 
-  sink.write("msg1"); // to buff
-  sink.write("msg2"); // flush
+  sink.write("msg1");  // to buff
+  sink.write("msg2");  // flush
 }
 
 TEST_F(BufferedSinkTest, FlushFlushesBuffer) {
@@ -88,16 +96,16 @@ TEST_F(BufferedSinkTest, FlushFlushesBuffer) {
 
   LogRecord record;
 
-  sink.write(record); // to buff
-  sink.write(record); // same
-  sink.write(record); // same
+  sink.write(record);  // to buff
+  sink.write(record);  // same
+  sink.write(record);  // same
 
   sink.flush();
 }
 
 TEST_F(BufferedSinkTest, FlushEmptyBuffer) {
   EXPECT_CALL(*mockFormatter_, ParanthesisOp(_)).Times(0);
-  EXPECT_CALL(*mockDownstream_, write(An<const LogRecord &>())).Times(0);
+  EXPECT_CALL(*mockDownstream_, write(An<const LogRecord&>())).Times(0);
   EXPECT_CALL(*mockDownstream_, write(std::string{})).Times(0);
   EXPECT_CALL(*mockDownstream_, flush()).Times(0);
 
@@ -107,7 +115,7 @@ TEST_F(BufferedSinkTest, FlushEmptyBuffer) {
 }
 
 TEST_F(BufferedSinkTest, OpenCallsDownstreamOpen) {
-  MockLogSink *rawDownstream = mockDownstream_.get();
+  MockLogSink* rawDownstream = mockDownstream_.get();
 
   BufferedSink sink(mockFormatter_, std::move(mockDownstream_), 1);
 

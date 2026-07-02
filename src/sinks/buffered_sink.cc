@@ -11,6 +11,8 @@ BufferedSink::BufferedSink(std::shared_ptr<IFormatter> formatter,
   formattedMessages_.reserve(batchSize_);
 }
 
+BufferedSink::~BufferedSink() noexcept { flush(); }
+
 [[nodiscard]] bool BufferedSink::open() const noexcept {
   return downstream_->open();
 }
