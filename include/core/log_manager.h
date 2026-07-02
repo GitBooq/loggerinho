@@ -129,11 +129,11 @@ public:
       return *this;
     }
 
-    Builder &withBufferedSink(const std::shared_ptr<ILogSink> &downstream,
+    Builder &withBufferedSink(std::unique_ptr<ILogSink> downstream,
                               std::size_t batchSize = 100) {
       sinks_.push_back(std::make_shared<BufferedSink>(
           std::make_shared<formatter::PlainTextFormatter>(),
-          std::unique_ptr<ILogSink>(downstream.get()), batchSize));
+          std::move(downstream), batchSize));
       return *this;
     }
 
