@@ -28,6 +28,7 @@ add_executable(tests_all
 
 target_link_libraries(tests_all
     logger
+    nlohmann_json::nlohmann_json
     GTest::gtest_main
     GTest::gmock_main
 )
