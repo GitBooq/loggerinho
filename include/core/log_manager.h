@@ -20,19 +20,19 @@
 #include <vector>
 
 class LogManager {
-public:
-  static LogManager &instance() {
-    static LogManager manager; // Thread-­safe static local variable.
+ public:
+  static LogManager& instance() {
+    static LogManager manager;  // Thread-­safe static local variable.
     return manager;
   }
 
-  LogManager(const LogManager &) = delete;
-  LogManager(LogManager &&) = delete;
-  LogManager &operator=(const LogManager &) = delete;
-  LogManager &operator=(LogManager &&) = delete;
+  LogManager(const LogManager&) = delete;
+  LogManager(LogManager&&) = delete;
+  LogManager& operator=(const LogManager&) = delete;
+  LogManager& operator=(LogManager&&) = delete;
 
   std::shared_ptr<Logger> getOrCreate(
-      const std::string &name,
+      const std::string& name,
       std::vector<std::shared_ptr<ILogSink>> sinks = {},
       std::shared_ptr<IEnricher> enricher = std::make_shared<BaseEnricher>(),
       std::vector<std::shared_ptr<IFilter>> filters = {}) {
@@ -50,7 +50,7 @@ public:
     return logger;
   }
 
-  std::shared_ptr<Logger> get(const std::string &name) {
+  std::shared_ptr<Logger> get(const std::string& name) {
     std::scoped_lock<std::mutex> lock(mutex_);
 
     auto iter = loggers_.find(name);
@@ -60,7 +60,7 @@ public:
     return iter->second;
   }
 
-  std::optional<std::shared_ptr<Logger>> tryGet(const std::string &name) {
+  std::optional<std::shared_ptr<Logger>> tryGet(const std::string& name) {
     std::scoped_lock<std::mutex> lock(mutex_);
 
     auto iter = loggers_.find(name);
@@ -70,12 +70,12 @@ public:
     return iter->second;
   }
 
-  bool contains(const std::string &name) const {
+  bool contains(const std::string& name) const {
     std::scoped_lock<std::mutex> lock(mutex_);
     return loggers_.contains(name);
   }
 
-  bool remove(const std::string &name) {
+  bool remove(const std::string& name) {
     std::scoped_lock<std::mutex> lock(mutex_);
     return loggers_.erase(name) > 0;
   }
@@ -91,7 +91,7 @@ public:
 
     std::vector<std::string> names;
     names.reserve(loggers_.size());
-    for (const auto &[name, _] : loggers_) {
+    for (const auto& [name, _] : loggers_) {
       names.push_back(name);
     }
     return names;
@@ -99,66 +99,56 @@ public:
 
   void flushAll() {
     std::scoped_lock<std::mutex> lock(mutex_);
-    for (auto &[_, logger] : loggers_) {
+    for (auto& [_, logger] : loggers_) {
       logger->flush();
     }
   }
 
   class Builder {
-  public:
+   public:
     Builder() = default;
 
-    Builder &named(const std::string &name) {
+    Builder& named(const std::string& name) {
       name_ = name;
       return *this;
     }
 
-    Builder &
-    withConsoleSink(const std::shared_ptr<formatter::IFormatter> &formatter =
-                        std::make_shared<formatter::PlainTextFormatter>()) {
+    Builder& withConsoleSink(
+        std::shared_ptr<IFormatter> formatter =
+            std::make_shared<formatter::PlainTextFormatter>()) {
       sinks_.push_back(std::make_shared<ConsoleSink>(formatter));
       return *this;
     }
 
-    Builder &
-    withFileSink(const std::string &path,
-                 const std::shared_ptr<formatter::IFormatter> &formatter =
-                     std::make_shared<formatter::PlainTextFormatter>(),
-                 std::size_t maxSize = 1024 * 1024) {
+    Builder& withFileSink(
+        const std::string& path, std::size_t maxSize = 1024 * 1024,
+        std::shared_ptr<IFormatter> formatter =
+            std::make_shared<formatter::PlainTextFormatter>()) {
       sinks_.push_back(std::make_shared<FileSink>(formatter, path, maxSize));
       return *this;
     }
 
-    Builder &withBufferedSink(std::unique_ptr<ILogSink> downstream,
-                              std::size_t batchSize = 100) {
+    Builder& withBufferedSink(
+        std::unique_ptr<ILogSink> downstream, std::size_t batchSize = 100,
+        std::shared_ptr<IFormatter> formatter =
+            std::make_shared<formatter::PlainTextFormatter>()) {
       sinks_.push_back(std::make_shared<BufferedSink>(
-          std::make_shared<formatter::PlainTextFormatter>(),
-          std::move(downstream), batchSize));
+          formatter, std::move(downstream), batchSize));
       return *this;
     }
 
-    Builder &withTimestamp() {
+    Builder& withTimestamp() {
       enricher_ = EnricherFactory::create(enricher::EnricherFlag::TIMESTAMP);
       return *this;
     }
 
-    Builder &withLevelFilter(LogLevel minLevel) {
+    Builder& withLevelFilter(LogLevel minLevel) {
       filters_.push_back(std::make_shared<LevelFilter>(minLevel));
       return *this;
     }
 
-    Builder &withNameFilter(const std::set<std::string> &allowed) {
+    Builder& withNameFilter(const std::set<std::string>& allowed) {
       filters_.push_back(std::make_shared<NameFilter>(allowed));
-      return *this;
-    }
-
-    Builder &withJsonFormatter() {
-      formatter_ = std::make_shared<formatter::JsonFormatter>();
-      return *this;
-    }
-
-    Builder &withPlainTextFormatter() {
-      formatter_ = std::make_shared<formatter::PlainTextFormatter>();
       return *this;
     }
 
@@ -188,7 +178,7 @@ public:
       return logger;
     }
 
-  private:
+   private:
     std::string name_ = "logger";
     std::vector<std::shared_ptr<ILogSink>> sinks_;
     std::shared_ptr<IEnricher> enricher_;
@@ -198,7 +188,7 @@ public:
 
   static Builder builder() { return {}; }
 
-private:
+ private:
   LogManager() = default;
   ~LogManager() = default;
 
